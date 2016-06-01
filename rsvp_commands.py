@@ -4,6 +4,7 @@ import re
 import datetime
 import random
 
+import dateparser
 from pytimeparse.timeparse import timeparse
 
 import calendar_events
@@ -157,14 +158,14 @@ class RSVPQuickInitCommand(RSVPCommand):
   regex = r'quickinit (?P<date>.*)\|(?P<time>.*)\|(?P<duration>.*)\|(?P<location>.*)\|(?P<description>.*)'
 
   def run(self, events, *args, **kwargs):
-    sender_id   = kwargs.pop('sender_id')
-    event_id    = kwargs.pop('event_id')
-    subject    = kwargs.pop('subject')
-    date    = kwargs.pop('date')
-    time    = kwargs.pop('time')
-    duration    = kwargs.pop('duration')
-    location    = kwargs.pop('location')
-    description    = kwargs.pop('description')
+    sender_id = kwargs.pop('sender_id')
+    event_id = kwargs.pop('event_id')
+    subject = kwargs.pop('subject')
+    date = kwargs.pop('date')
+    time = kwargs.pop('time')
+    duration = kwargs.pop('duration')
+    location = kwargs.pop('location')
+    description = kwargs.pop('description')
 
     body = strings.MSG_INIT_SUCCESSFUL
 
@@ -172,7 +173,9 @@ class RSVPQuickInitCommand(RSVPCommand):
       # Event already exists, error message, we can't initialize twice.
       body = strings.ERROR_ALREADY_AN_EVENT
     else:
-      # Update the dictionary with the new event and commit.
+      date_string = str(dateparser.parse(date).date())
+      time_string = dateparser.parse(time).strftime('%H:%M')
+      duration = timeparse(duration, granularity='minutes')
       events.update(
         {
           event_id: {
@@ -183,9 +186,9 @@ class RSVPQuickInitCommand(RSVPCommand):
             'yes': [],
             'no': [],
             'maybe': [],
-            'time': time,
+            'time': time_string,
             'limit': None,
-            'date': date,
+            'date': date_string,
           }
         }
       )
