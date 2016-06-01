@@ -153,6 +153,47 @@ class RSVPCreateCalendarEventCommand(RSVPEventNeededCommand):
     return RSVPCommandResponse(events, RSVPMessage('stream', body))
 
 
+class RSVPQuickInitCommand(RSVPCommand):
+  regex = r'quickinit (?P<date>.*)\|(?P<time>.*)\|(?P<duration>.*)\|(?P<location>.*)\|(?P<description>.*)'
+
+  def run(self, events, *args, **kwargs):
+    sender_id   = kwargs.pop('sender_id')
+    event_id    = kwargs.pop('event_id')
+    subject    = kwargs.pop('subject')
+    date    = kwargs.pop('date')
+    time    = kwargs.pop('time')
+    duration    = kwargs.pop('duration')
+    location    = kwargs.pop('location')
+    description    = kwargs.pop('description')
+
+    body = strings.MSG_INIT_SUCCESSFUL
+
+    if events.get(event_id):
+      # Event already exists, error message, we can't initialize twice.
+      body = strings.ERROR_ALREADY_AN_EVENT
+    else:
+      # Update the dictionary with the new event and commit.
+      events.update(
+        {
+          event_id: {
+            'name': subject,
+            'description': description,
+            'place': location,
+            'creator': sender_id,
+            'yes': [],
+            'no': [],
+            'maybe': [],
+            'time': time,
+            'limit': None,
+            'date': date,
+          }
+        }
+      )
+
+    response = RSVPCommandResponse(events, RSVPMessage('stream', body))
+    return response
+
+
 class RSVPHelpCommand(RSVPCommand):
   regex = r'help$'
 

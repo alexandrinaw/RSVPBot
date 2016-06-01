@@ -17,6 +17,7 @@ class RSVP(object):
     self.filename = filename
     self.command_list = (
       rsvp_commands.RSVPInitCommand(key_word),
+      rsvp_commands.RSVPQuickInitCommand(key_word),
       rsvp_commands.RSVPHelpCommand(key_word),
       rsvp_commands.RSVPCancelCommand(key_word),
       rsvp_commands.RSVPMoveCommand(key_word),
