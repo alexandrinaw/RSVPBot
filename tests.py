@@ -669,6 +669,23 @@ rsvp set date 02/25/2100
         )
         self.assertEqual( '2100-02-25', self.event['date'])
 
+    def test_rsvp_quickinit(self):
+        command = 'rsvp quickinit | 2020-06-22 | 5pm | 1h | fun party ;)'
+        output = self.issue_command(command)
+        self.assertIn( 'This thread is now an RSVPBot event!', output[0]['body'])
+
+    def test_rsvp_quickinit_with_not_enough_commands_returns_error(self):
+        pass
+
+    def test_rsvp_quickinit_with_invalid_date_returns_error(self):
+        pass
+
+    def test_rsvp_quickinit_with_invalid_time_returns_error(self):
+        pass
+
+    def test_rsvp_quickinit_with_invalid_duration_returns_error(self):
+        pass
+
 
 if __name__ == '__main__':
     unittest.main()
