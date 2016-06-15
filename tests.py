@@ -669,22 +669,58 @@ rsvp set date 02/25/2100
         )
         self.assertEqual( '2100-02-25', self.event['date'])
 
+class RSVPQuickInitTest(unittest.TestCase):
+
+    def setUp(self):
+        self.rsvp = rsvp.RSVP('rsvp', None, filename='test.json')
+
+    def tearDown(self):
+        try:
+            os.remove('test.json')
+        except OSError:
+            pass
+
+    def create_input_message(self, content='', sender_full_name='Tester', subject='Testing',
+                             display_recipient='test-stream', sender_id='12345', message_type='stream',
+                             sender_email='a@example.com'):
+        return {
+            'content': content,
+            'subject': subject,
+            'display_recipient': display_recipient,
+            'sender_id': sender_id,
+            'sender_full_name': sender_full_name,
+            'sender_email': sender_email,
+            'type': message_type,
+        }
+
+    def issue_command(self, command):
+        message = self.create_input_message(content=command)
+        return self.rsvp.process_message(message)
+
     def test_rsvp_quickinit(self):
-        command = 'rsvp quickinit | 2020-06-22 | 5pm | 1h | fun party ;)'
+        command = 'rsvp quickinit | 2020-06-22 | 5pm | 1h | NYC| fun party ;)'
         output = self.issue_command(command)
-        self.assertIn( 'This thread is now an RSVPBot event!', output[0]['body'])
+        self.assertIn('This thread is now an RSVPBot event!', output[0]['body'])
 
     def test_rsvp_quickinit_with_not_enough_commands_returns_error(self):
-        pass
+        command = 'rsvp quickinit | 2020-06-22 | 5pm | NYC| fun party ;)'
+        output = self.issue_command(command)
+        self.assertIn('Oops', output[0]['body'])
 
     def test_rsvp_quickinit_with_invalid_date_returns_error(self):
-        pass
+        command = 'rsvp quickinit | 2020-06-32 | 5pm | 1h | NYC| fun party ;)'
+        output = self.issue_command(command)
+        self.assertIn('Oops', output[0]['body'])
 
     def test_rsvp_quickinit_with_invalid_time_returns_error(self):
-        pass
+        command = 'rsvp quickinit | 2020-06-22 | 33x | 1h | NYC| fun party ;)'
+        output = self.issue_command(command)
+        self.assertIn('Oops', output[0]['body'])
 
     def test_rsvp_quickinit_with_invalid_duration_returns_error(self):
-        pass
+        command = 'rsvp quickinit | 2020-06-22 | 5pm | 1n | NYC| fun party ;)'
+        output = self.issue_command(command)
+        self.assertIn('Oops', output[0]['body'])
 
 
 if __name__ == '__main__':

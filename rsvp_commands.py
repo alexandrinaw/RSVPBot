@@ -167,31 +167,48 @@ class RSVPQuickInitCommand(RSVPCommand):
     location = kwargs.pop('location')
     description = kwargs.pop('description')
 
-    body = strings.MSG_INIT_SUCCESSFUL
 
+    body = ''
     if events.get(event_id):
       # Event already exists, error message, we can't initialize twice.
       body = strings.ERROR_ALREADY_AN_EVENT
     else:
-      date_string = str(dateparser.parse(date).date())
-      time_string = dateparser.parse(time).strftime('%H:%M')
+      date = dateparser.parse(date)
+      if not date:
+        body += strings.ERROR_DATE_FORMAT_NOT_VALID
+      else:
+        date_string = str(date.date())
+
+      time = dateparser.parse(time)
+      if not time:
+        body += strings.ERROR_TIME_FORMAT_NOT_VALID
+      else:
+        time_string = time.strftime('%H:%M')
+
       duration = timeparse(duration, granularity='minutes')
-      events.update(
-        {
-          event_id: {
-            'name': subject,
-            'description': description,
-            'place': location,
-            'creator': sender_id,
-            'yes': [],
-            'no': [],
-            'maybe': [],
-            'time': time_string,
-            'limit': None,
-            'date': date_string,
+      if not duration:
+        body += strings.ERROR_DURATION_FORMAT_NOT_VALID
+
+      if (date and time and duration):
+        events.update(
+          {
+            event_id: {
+              'name': subject,
+              'description': description,
+              'place': location,
+              'creator': sender_id,
+              'yes': [],
+              'no': [],
+              'maybe': [],
+              'time': time_string,
+              'limit': None,
+              'date': date_string,
+            }
           }
-        }
-      )
+        )
+        body = strings.MSG_INIT_SUCCESSFUL
+      else:
+        body = 'Oops! ' + body
 
     response = RSVPCommandResponse(events, RSVPMessage('stream', body))
     return response
